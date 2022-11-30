@@ -1,0 +1,1 @@
+CREATE TABLE tb1(Name Char,Age INT, Number Int);

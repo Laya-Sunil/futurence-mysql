@@ -48,7 +48,10 @@ order by `orderNumber`, `orderLineNumber`;
 SELECT od.`orderNumber`,p.`productName`,p.`MSRP`,od.`priceEach`
 from products p INNER JOIN orderdetails od 
 on p.`productCode`=od.`productCode` 
-WHERE p.`productCode`='S10_1678' and p.`buyPrice`<p.`MSRP`;
+WHERE p.`productCode`='S10_1678'
+and od.`priceEach`<p.`MSRP`;
+-- and p.`buyPrice`<p.`MSRP`
+
 
 -- 7. Each customer can have zero or more orders while each order must belong to one customer. 
 -- Write a query to find all the customers and their orders as follows:

@@ -1,9 +1,0 @@
-
--- 4- TREE 
-SELECT id, CASE 
-        		WHEN pid IS NULL THEN "Root"
-        		WHEN id in (SELECT DISTINCT pid FROM Tree) THEN "Inner"
-        		ELSE "Leaf"  
-	     END as type
-FROM Tree
-ORDER BY id;

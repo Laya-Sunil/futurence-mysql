@@ -7,8 +7,27 @@ ON e.`DEPARTMENT_ID`=d.`DEPARTMENT_ID`
 WHERE e.`DEPARTMENT_ID`=90
 GROUP BY e.`JOB_ID`; 
 
+SELECT sum(`SALARY`)total_salary, min(e.`SALARY`)min_sal,
+        max(e.`SALARY`)max_sal,avg(e.`SALARY`)avg_sal
+FROM employees e INNER JOIN departments d 
+ON e.`DEPARTMENT_ID`=d.`DEPARTMENT_ID`
+WHERE e.`DEPARTMENT_ID`=90
+GROUP BY e.`JOB_ID`; 
+
+SELECT e.`EMPLOYEE_ID`,e.`SALARY`,e.`JOB_ID`,e.`DEPARTMENT_ID`,count(*)
+FROM employees e INNER JOIN departments d 
+ON e.`DEPARTMENT_ID`=d.`DEPARTMENT_ID`
+WHERE e.`DEPARTMENT_ID`=90
+-- GROUP BY e.`JOB_ID`; 
+
+SELECT sum(`SALARY`)total_salary, min(e.`SALARY`)min_sal,
+        max(e.`SALARY`)max_sal,avg(e.`SALARY`)avg_sal
+FROM employees e INNER JOIN departments d 
+ON e.`DEPARTMENT_ID`=d.`DEPARTMENT_ID`
+WHERE e.`DEPARTMENT_ID`=90
+GROUP BY e.`JOB_ID`; 
 -- 2. 
-SELECT d.name, e.name, e.salary
+SELECT d.name Department, e.name, e.salary
 FROM Employee e INNER JOIN Department d 
 ON e.departmentid = d.id
 WHERE 3>(

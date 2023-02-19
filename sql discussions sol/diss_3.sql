@@ -5,7 +5,7 @@ show tables;
 select c1.`city`, c1.`customerName`,c2.`customerName`
 from customers c1 cross join customers c2
 on c1.`city`=c2.`city` 
-where c1.`customerName` > c2.`customerNumber`;
+where c1.`customerName` > c2.`customerName`;
 
 select * from orderdetails;
 
@@ -51,8 +51,16 @@ on p.`productCode`=od.`productCode`
 WHERE p.`productCode`='S10_1678'
 and od.`priceEach`<p.`MSRP`;
 -- and p.`buyPrice`<p.`MSRP`
+SELECT od.`orderNumber`,p.`productName`,p.`MSRP`,od.`priceEach`
+from products p INNER JOIN orderdetails od 
+on p.`productCode`=od.`productCode` 
+where od.`quantityOrdered` in (select od.`quantityOrdered`-1 from orderdetails od 
+WHERE `productCode`='S18_2248');
 
 
+
+select od.`quantityOrdered`-1 from orderdetails od 
+WHERE `productCode`='S10_1678';
 -- 7. Each customer can have zero or more orders while each order must belong to one customer. 
 -- Write a query to find all the customers and their orders as follows:
 SELECT c.`customerNumber`,c.`customerName`,o.`orderNumber`,o.status
@@ -65,5 +73,20 @@ from customers c left JOIN orders o on c.`customerNumber`=o.`customerNumber`
 where o.`orderNumber` is NULL;
 
 
+-------------OR------------
+SELECT c.`customerNumber`, c.`customerName`
+from customers c 
+where c.`customerNumber` not IN
+        (SELECT DISTINCT o.`customerNumber`
+        from orders o);
 
 
+-- tottal purchase value of an ORDER
+SELECT `customerNumber`, `customerName`,totat_amt
+from customers INNER JOIN orders USING (`customerNumber`)
+
+(
+SELECT od.`orderNumber`, sum(od.`quantityOrdered`* od.`priceEach`)total_amt
+from orderdetails od 
+GROUP BY od.`orderNumber`
+order by `orderNumber`;

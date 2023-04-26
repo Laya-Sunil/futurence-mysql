@@ -1,0 +1,28 @@
+from pyspark import SparkContext, SparkConf
+conf = SparkConf().setAppName("Movie Data Analysis")
+sc = SparkContext(conf=conf)
+
+
+rdd = sc.textFile(r"C:\Users\miles\Desktop\PYTHON_JUPYTER\movies.csv")
+head = rdd.first()
+rdd = rdd.filter(lambda line: line != head)
+
+rdd = rdd.map(lambda row: tuple(row.split(",")))
+movies_rdd = rdd.map(lambda row: (x[0], x[1].strip()[-5:-1], x[2]))
+movies_count = movies_rdd.count()
+
+year_wise_movies = movies_rdd.map(lambda x: (x[1], 1)).reduceByKey(add).sortBy(lambda x: x[1], ascending=False)
+
+genres_rdd = movies_rdd.flatMap(lambda x: x[2].split("|"))
+
+year_wise_genres = genres_rdd.map(lambda x: ((x, x[-4:-1]), 1)).reduceByKey(add).map(lambda x: (x[0][1], (x[0][0], x[1]))).groupByKey().mapValues(list).sortBy(lambda x: x[0], ascending=False)
+
+print("Total movies released:", movies_count)
+print("Year-wise no of movies released (highest to lowest):")
+for data in year_wise_movies.collect():
+    print(data[0], data[1])
+
+
+print("Year-wise trending genres:")
+for data in year_wise_genres.collect():
+    print(data[0], sorted(data[1], key=lambda x: x[1], reverse=True)[:3])

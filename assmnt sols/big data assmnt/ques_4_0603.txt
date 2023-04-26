@@ -1,0 +1,19 @@
+sqoop export \
+--connect jdbc:mysql://localhost/sqoop_training \
+--username sqoop --password sqoop \
+--table movie-count \
+--export-dir hdfs://user/training/movie/movie-count \
+--input-fields-terminated-by ',' \
+--columns "year,movie_count"
+
+
+
+sqoop import \
+--connect jdbc:mysql://localhost/sqoop_training \
+--username sqoop \
+--password sqoop \
+--query "SELECT year, count(movie) as movie_count FROM movie_count GROUP BY year ORDER BY movie_count DESC LIMIT 5" \
+--target-dir hdfs:///user/training/movie/top-5 \
+--fields-terminated-by ',' \
+--m 1
+

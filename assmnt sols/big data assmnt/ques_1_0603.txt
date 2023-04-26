@@ -1,0 +1,35 @@
+
+from pyspark import SparkContext
+# create a SparkContext
+sc = SparkContext("local", "Movies App")
+
+rdd = sc.textFile(r"C:\Users\miles\Desktop\PYTHON_JUPYTER\movies.csv")
+rdd.collect()
+
+def get_yr(title):
+    title = title.strip()
+    if title[-1] == ')':
+        year = title[-5:-1] 
+    else: None
+    return year
+#extract_year(' Big Green, The (1995) ')
+
+movie_year_rdd = rdd.map(lambda line: line.split(",")).map(lambda title: (get_yr(title[1]), title))
+
+movie_year_rdd.take(10).collect()
+
+path_hdfs = "/user/hadoop/training/movies"
+movie_year_rdd.map(lambda data: ",".join(data[1]) + "," + str(data[0])).saveAsTextFile(path_hdfs)
+
+#b
+
+# create a SparkSession
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.appName("ratings").getOrCreate()
+
+df = spark.read.format("csv").option("header", True).load("/labs/dataset/ratings.csv")
+
+df.write.mode("overwrite").format("csv").option("header", True).save("/user/training/movie/")
+
+
+spark.stop()

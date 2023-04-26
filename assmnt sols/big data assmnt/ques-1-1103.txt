@@ -1,0 +1,23 @@
+### 1
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import regexp_extract, current_timestamp
+
+# SparkSession
+spark = SparkSession.builder.appName("MoviesData").getOrCreate()
+
+# loading movies dataset
+df_1 = spark.read.format("csv").option("header", "true").load("/labs/dataset/movies.csv")
+
+df_1 = df_1.withColumn("Title_split", split(col("Title"), " \("))
+movie_df = df_1.withColumn("Year", split(col("Title_split").getItem(-1), "\)").getItem(0))
+
+movie_df.select("Title", "Year", current_timestamp().alias("Timestamp")).show()
+
+movie_df.write.mode("overwrite").csv("/user/training/movie/movie1.csv")
+
+#b
+movie_df.write.mode("overwrite").json("/user/movie/movies.json")
+
+spark.stop()
+
+

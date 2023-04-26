@@ -1,0 +1,65 @@
+--Git commands
+-------------------------------------------------------------------
+Git hub -- cloud repository for codebase. alternative option is bit bucket
+Git --- it is a version control system and source code management. 
+********************************************************************************************************************************
+Checking in the code --
+untracked file(newly created one) --> staged file(git add) ---> committed file(git commit) --> pushed file(git push)
+********************************************************************************************************************************
+-- git status
+to see the status of current repository
+
+-- check in the code
+1. git clone <addr>
+git clone https://github.com/adirr0910/futurense_mysql.git
+2. git add <filename>
+git add test1.sql
+OR
+git add .
+--- adds all the file at once
+3.git commit -m "add a commit msg here"
+git commit -m "create new table"
+4.git push
+
+-- sync local repo with remote repo
+git pull
+
+-- view the logs
+git log 
+git log --oneline
+
+-- view all the branches
+
+-- view local ones
+git branch
+
+-- to view remote ones
+git branch -r
+-- to view all
+git branch -a
+-- create new branch 
+git branch branch_name
+OR
+git checkout -b branch_name
+OR 
+git switch -c new_branch_name
+
+
+-- recover directory if accidentally deleted
+git checkout -- <dir name>
+
+
+-- change branch
+git checkout branch_name
+OR
+git switch branch_name
+
+--
+
+-- create repository
+
+
+
+-- git revert
+
+

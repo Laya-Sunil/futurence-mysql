@@ -1,0 +1,113 @@
+------ Azure Resource Group(RG)
+It is a container that holds related resources together for Azure solution.
+Resource group name must be unique within a azure subscription however its not globally unique across all azure subscriptions
+
+1. Click on the Resource Groups
+2. Give RG name
+3. Create
+------ Azure Storage Account
+It can store upto 500TB on cloud. Use general purpose storage account to store object data, use NoSQL data store, define and use queues for message processing and set up file shares in cloud. Use blob storage and hot or cool access tier to optimize costs based on the frequency of usage.
+
+1. Click on storage account from the left side 
+2. Choose the resource group
+3. give a storage account name (all in lower case) -- globally unique name
+4. Choose the Region, Performance -- standard or Premium, Redundancy -- Choose everything default only
+5. if change accordingly -- if blob only or nlob, files, tables, queues
+6. Change the network connectivity to limit public access -- Here enable public access from all networks and keep it default
+7. Data protection - Here to protect data from accidental deletion or modification - we can opt for soft-delete, vblob versioning and configure the access control to set retention policy on account level.
+8. Encryption - Go with default MS managed keys(MMK). there is also option for customer managed keys(CMK) which requires user to choose the key vault and key.
+9. review and create
+
+NOTE-1 : storage account can be connected either publicaly, via public IP addresses or service endpoints or privately using private endpoint
+
+------- Azure Blob Container
+1. Go to the storage account
+2. On left side -- under Data Storage -- Choose Containers
+3. Click on the + button on top
+4. Give container name (all in lower case)
+5. Choose visibility such as if it is private or public
+6. Create
+------- Upload data in Blob Storage
+1. Go to Container created inside storage account
+2. Click on the upload button
+3. Browse the file and upload
+
+NOTE-1 : Here if u click the file/data uploaded you can view the link of the file/data hosted on azure cloud. Thus you can store any type of data in azure storage and shre the link to make it accessible to others. Its visibility depends on the visibility of container chosen while creating the container.
+
+NOTE-2 : In above steps we have created a block blob. There is additional option to acquire lease on the blob, while lease it cannot be deleted or modified. You can modify it only after breaking lease.There is also option to change access tier to optimise the storage cost, like hot, cool, cold and archive. we can choose accordingly, default it will be place in hot.
+
+NOTE-3 : Just like S3, Here also there is option of version called "BLOB Versioning". This should be enabled in the configuration section of the blob container, then everytime a blob is overwritten or deleted, existing version id preserved under unique version id. where you can access and restore the previous versions of blob if required. Versioning costs extra. 
+To enable Blob Versioning -- got to the container -- under Data management -- Choose Data protection -- enable the blob versioning and save
+"Blob Versioning" is available for Block Blob, General purpose V2 and Blob Storage account.
+Also there is option to Edit your file or take snapshots of it. If a blob has a snapshot, then blob cannot be deleted unless its snapshot is also deleted.
+
+NOTE-4 : BLOB Soft Delete -- This is to protect an individual blob, snapshot or verion from accidental delete or overwrites by maintaining the delete data in the system for a specified period of time. During the retention period, soft-deleted object can be restored to its state at the time it was deleted. Once retention period expires, object gets permanently deleted. Soft-delete option is available for both conatiners and blob under Data Protection section. We can set and reset the retention period as per our need.
+Snapshots of deleted blob also get marked as soft-dleted.
+Blob soft-delete does not protect against the deletion of a storage account, to protect storage account configure lock on storage account resource.
+
+NOTE-5 : SAS - Shared Access Signature - is a URI(Universal Resource Indentifier) grant restricted access to an azure storage blob. Use it when you want give access to storage account resources for specific time range without sharing the storage account key. Here you can set the start and expiry date and time, permissions(read, write, delete etc) and other settings.  Then generate the token and URL and share it accordingly.
+
+-------- Azure Data Factory(ADF)
+1. Search for Data Factories 
+2. Create Data Factory
+3. Choose RG
+4. Give a unique name for data factory and choose region and version
+5. Git Configuration - Here you can choose to link a Git repo with Azure Devops or GitHub for change tracking and collaboration. Enable git configuration later for now.
+6. Networking - Choose the connection option (public or private endpoint) -- choose public(keep all default)
+7. Advanced Encryption - Data in Azure is by default encrypted with MS managed keys. For additional control, we use customer managed keys to encrypt blob and file data. Customer-managed keys must be kept in Azure key vaults. We can create it our own or use Azure key vault APIs to generate keys. Here the storage account and key vault must be same region but can be in diff subscriptions. -- Keep it disabled
+8. Tags - name-value pairs used to categorise resources and view consolidated billing by applying same tag to multiple resources and resource groups. -- no need to create tags
+9. Review and create
+
+--------- ADF Blob to Blob
+1. Go to ADF and launch the studio
+2. Go to Manage on left pannel and create linked service
+3. Choose the source service - (Blob)
+4. Give a name and description for source linked service, choose subscription and storage account which contains the source data
+5. Test the connection
+6. Create 
+7. Similarly create a target linked service as well.
+8. Go to Author on left pannel, click on + button and choose dataset
+9. choose source service and data format - Blob and delimitted text
+10. Set properties - Choose the source linked service and browse the file from the source blob container and first row as header if required.
+11. Import Schema - Keep it default and OK
+12. Create dataset for target as well, choose target linked service and target blob conatiner
+13. Create a pipeline -- under Move and Transform -- drag and drop Copy Data 
+14. Choose source and sink dataset 
+15. Debug -> Validate -> Publish all 
+16. check the Target container in Storage account -- File will be transferred there.
+
+---------- ADF Blob to Azure SQL DB
+1. Create a Source Blob Container and upload a file
+2. Go to SQL databases and click on create SQL DB
+3. Choose the RG and set DB name
+4. Choose an existing server or create a new one -- give server name -- choose SQL Authentication -- Set server admin and password -- laya -- server@123
+5. Networking -- Choose connectivity methood as Public endpoint and allow azure services to access server -- Add current IP address to aloow client IP in server firewall.
+6. Keep Connection policy and TLS version default
+7. Keep Security default -- security option include ledger, identity and transparent data encryption(TDE)
+8. Choose Data Source to either start with blank DB or restore from backup or populate DB with sample data -- Choose collation and maintenance window -- keep all default
+9. Tags - create if required (skip for now) 
+10. Review and Create
+11. Go to SQL DB created -- click on Query Editor on left pannel -- enter the admin and password set while creating the resource -- laya -- server@123 -- allow the server IP
+12. Create a table with columns matching with source data file
+13. Now go to ADF -- Create source(BLOB) and target(SQL DB) linked services -- for target link choose SQL DB -- give server, DB, admin, password created while launching SQL DB.
+14. Create 2 datasets -- one for source csv file in Blob -- one for target table in SQL DB
+15. Create pipeline -- drag and drop copy data from Move and transform -- choose source and sink -- Mapping section import the schema 
+16. Debug -> Validate -> Publish all
+17. Check target table in SQL DB to view the csv file data loaded.
+
+---------- Azure Databricks
+1. Search for Azure Databricks
+2. create azure databricks service
+3. choose subscription and RG
+4. Give workspace name (unique within region) -- choose pricing tier and region (default)
+5. Networking - configure deployment setting in public IP or VNet -- keep it default
+6. Encryption - For additional control of data user can use their own key to protect and control access to data. for customer-managed encryption must be enabled. Also there is encryption of DBFS root with a second layer of encryption  called infrastructure encryption using platform managed key to achieve double encryption fpr DBFS root -- No need to enable it 
+7. Review and create
+
+
+-- heirarchical vs non-heirachical namespace in Azure
+namespace is a logical container that holds the set of related resources. 
+Heirarchial is namespace where resources are organized in heirarchical structure. Each namespace can contain multiple child namespace and they can have their own child as well forming tree structure.
+Non-Heirarchical is namespace where resources are oraganized as flat list, no tree like structure.
+
+

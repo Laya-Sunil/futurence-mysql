@@ -1,0 +1,47 @@
+### 3
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import split, explode, window
+
+# Create a SparkSession
+spark = SparkSession.builder \
+    .appName("Movies Streaming") \
+    .getOrCreate()
+
+
+# Read the input data as a streaming DataFrame
+df = spark.readStream \
+    .schema("movieId INT, title STRING, genres STRING") \
+    .option("maxFilesPerTrigger", 1) \
+    .json("/user/training/movies.json")
+
+# Split the genres by '|'
+genres_df = df.select("movieId", "title", explode(split("genres", "\|")).alias("genre"))
+
+# a
+genre_wise_batch_counts = genres_df.groupBy("genre").count()
+
+# b
+window_duration = "5 minutes"
+slide_duration = "1 minute"
+window_count = genres_df \
+    .withWatermark("timestamp", "10 minutes") \
+    .groupBy(window("timestamp", window_duration, slide_duration), "genre") \
+    .count()
+
+batch_query = genre_wise_batch_counts.writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .trigger(processingTime="60 seconds") \
+    .start()
+
+win_query = window_count.writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .trigger(processingTime="1 minute") \
+    .start()
+
+batch_query.awaitTermination()
+win_query.awaitTermination()
+
+spark.stop()

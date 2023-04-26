@@ -1,0 +1,22 @@
+{
+  "firstName": "Tom",
+  "lastName": "Ford",
+  "age": 40,
+  "address": {
+    "street": "St. Peters St",
+    "city": "NYX",
+    "state": "CA",
+    "zip": "12345"
+  },
+  "phoneNumbers": [
+    {
+      "type": "home",
+      "number": "000-555-7890"
+    },
+    {
+      "type": "work",
+      "number": "555-467-5678"
+    }
+  ],
+  "email": "tomy.f@example.com"
+}

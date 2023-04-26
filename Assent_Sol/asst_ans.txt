@@ -1,0 +1,54 @@
+--- 1.
+SELECT CONCAT(EmpFname,' ',EmpLname) as FullName
+FROM EmployeeInfo
+WHERE EmpFname LIKE 'S%'
+AND  DOB  BETWEEN '1970-05-02' AND '1975-12-31';
+
+--- 2.
+SELECT Department, COUNT(EmpID) as DeptEmpCount
+FROM EmployeeInfo
+GROUP BY Department
+HAVING COUNT(EmpID)<2
+ORDER BY DeptEmpCount DESC;
+
+-- 3
+SELECT CONCAT(e.EmpFname,' ',e.EmpLname) as FullName, p.EmpPosition
+FROM EmployeeInfo e INNER JOIN EmployeePosition p
+ON e.EmpID = p.EmpID
+WHERE p.EmpPosition LIKE 'Manager%';
+
+
+---------------------------------------
+-- Q1 ----
+
+with recursive cte_birthdays as 
+(
+    select '1998-02-05' as 'dob' from dual
+    union all 
+    select date_add(dob,interval 1 year) from cte_birthdays
+    where year(cte_birthdays.dob)<year(curdate())
+) 
+select dob,dayname(dob) from cte_birthdays;
+
+
+-- Q2 ----
+
+-- 1
+select ename,sal, rank()over(order by sal desc) 'rank_', 
+dense_rank()over(order by sal desc) 'dense_rank_'
+from emp;
+-- 2
+select ename,sal,  lead(sal)over(order by sal)'lead', 
+lag(sal)over(order by sal)'lag'
+from emp;
+-- 3
+select ename, sal, deptno, max(sal)over(partition by deptno)'max_sal'
+from emp;
+-- 4
+with cte as (
+select ename, job, hiredate, first_value(hiredate)over(order by hiredate desc) 'last_joined'
+from emp
+where job like'clerk%'
+)
+select * from cte where hiredate = last_joined;
+

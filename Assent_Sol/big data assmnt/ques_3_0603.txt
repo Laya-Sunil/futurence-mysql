@@ -1,0 +1,56 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import desc, explode, split, collect_list, count
+
+# Create Spark session
+spark = SparkSession.builder.appName("Movie Analysis").getOrCreate()
+
+# Load data 
+movies_df = spark.read.format("csv").option("header", "true").load("/user/training/movie/movies1.csv")
+ratings_df = spark.read.format("csv").option("header", "true").load("/user/training/movie/rating.csv")
+
+movies_df = movies_df.withColumn("year", split(movies_df.title, "\(").getItem(1))
+movies_df = movies_df.withColumn("year", split(movies_df.year, "\)").getItem(0))
+
+movies_count = movies_df.groupBy("year").agg(count("title").alias("count")).orderBy(desc("count"))
+# Save in csv format
+movies_count.write.format("csv").mode("overwrite").save("/user/training/movie/movie-count")
+
+# Save in Parquet format to HDFS
+movies_count.write.format("parquet").mode("overwrite").save("/user/training/movie/movie-count.parquet")
+
+# Save in ORC format to HDFS
+movies_count.write.format("orc").mode("overwrite").save("/user/training/movie/movie-count-orc")
+
+# Extract the year and rating 
+ratings_df = ratings_df.withColumn("year", split(ratings_df.timestamp, "-").getItem(0))
+ratings_df = ratings_df.select("movieId", "rating", "year")
+
+
+joined_df = movies_df.join(ratings_df, movies_df.movieId == ratings_df.movieId)
+
+# year-wise top 3 rated movies 
+
+top_movies = joined_df.groupBy("year").agg(collect_list("rating").alias("ratings"), 
+                                            collect_list("title").alias("titles"),
+                                            collect_list("genres").alias("genres"))
+top_movies = top_movies.withColumn("top_ratings", explode(top_movies.ratings))
+top_movies = top_movies.withColumn("top_titles", explode(top_movies.titles))
+top_movies = top_movies.withColumn("top_genres", explode(top_movies.genres))
+top_movies = top_movies.drop("ratings", "titles", "genres")
+top_movies = top_movies.orderBy(["year", "top_ratings"], ascending=[True, False])
+top_movies = top_movies.groupBy("year").agg(collect_list("top_titles").alias("top_titles"),
+                                             collect_list("top_genres").alias("top_genres"))
+top_movies = top_movies.select("year", "top_titles", "top_genres")
+
+# Display the top 3 rated movies for each year
+top_movies.show(truncate=False)
+
+genres_df = movies_df.select("year", "genres")
+genres_df = genres_df.withColumn("genre", explode(split(genres_df.genres, "\|")))
+trending_genres = genres_df.groupBy("year", "genre").agg(count("genre").alias("count"))
+trending_genres = trending_genres.orderBy(["year", "count"], ascending=[True, False])
+trending_genres = trending_genres.groupBy("year").agg(collect_list("genre").alias("trending_genres"))
+trending_genres = trending_genres.select("year", "trending_genres")
+
+# Display the trending genres by year
+trending_genres.show(truncate=False)

@@ -1,0 +1,24 @@
+## 2
+from pyspark import SparkContext
+from pyspark.streaming import StreamingContext
+
+sc = SparkContext("local[2]", "Movies Streaming App")
+sc_1 = StreamingContext(sc, 60)
+
+# Create a DStream from the movies1.csv file
+dstream = sc_1.textFileStream("/user/training/movie/movies1.csv")
+
+# a
+genres = dstream.flatMap(lambda rec: rec.split(",")[2].split("|")) \
+                            .map(lambda genre: (genre, 1)) \
+                            .reduceByKey(lambda x, y: x + y)
+                            
+# b
+trending_genres = genres.window(300, 60).transform(lambda rdd: rdd.sortBy(lambda x: x[1], ascending=False))
+                              
+#  c
+genres.pprint()
+trending_genres.pprint()
+
+sc_1.start()
+sc_1.awaitTermination()

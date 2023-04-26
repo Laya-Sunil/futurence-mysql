@@ -1,8 +1,0 @@
-with recursive cte_birthdays as 
-(
-    select '1998-02-05' as 'dob' from dual
-    union all 
-    select date_add(dob,interval 1 year) from cte_birthdays
-    where year(cte_birthdays.dob)<year(curdate())
-) 
-select dob,dayname(dob) from cte_birthdays;
